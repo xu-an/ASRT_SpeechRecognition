@@ -20,7 +20,10 @@ import random
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization # , Flatten
 from keras.layers import Lambda, TimeDistributed, Activation,Conv2D, MaxPooling2D #, Merge
-from keras import backend as K
+#[xuan] change to tf.keras
+# from keras import backend as K
+from tf.keras import backend as K
+
 from keras.optimizers import SGD, Adadelta, Adam
 
 from readdata24 import DataSpeech
