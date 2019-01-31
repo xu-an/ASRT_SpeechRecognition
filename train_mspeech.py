@@ -14,12 +14,30 @@ from keras.backend.tensorflow_backend import set_session
 
 from SpeechModel251 import ModelSpeech
 
+'''
+# [xuan] no need to config GPU as we gonna use TPU
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 #进行配置，使用95%的GPU
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.95
 #config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
 set_session(tf.Session(config=config))
+'''
+
+# [xuan] get TPU info
+if 'COLAB_TPU_ADDR' not in os.environ:
+  print('ERROR: Not connected to a TPU runtime')
+  return
+else:
+  tpu_address = 'grpc://' + os.environ['COLAB_TPU_ADDR']
+  print ('TPU address is', tpu_address)
+
+  with tf.Session(tpu_address) as session:
+    devices = session.list_devices()
+
+  print('TPU devices:')
+  pprint.pprint(devices)
+
 
 
 datapath = ''
@@ -43,6 +61,7 @@ else:
 
 ms = ModelSpeech(datapath)
 
+#[xuan] convert of model to tpu_model is done in the ModelSpeech code line
 #ms.LoadModel(modelpath + 'speech_model251_e_0_step_327500.model')
 ms.TrainModel(datapath, epoch = 50, batch_size = 16, save_step = 500)
 

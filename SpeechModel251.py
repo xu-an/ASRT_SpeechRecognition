@@ -128,20 +128,40 @@ class ModelSpeech(): # 语音模型类
 		
 		model.summary()
 		
+		#[xuan] convert keras model to tpu model
+		tpu_model = tf.contrib.tpu.keras_to_tpu_model(
+			model,
+			strategy=tf.contrib.tpu.TPUDistributionStrategy(
+				tf.contrib.cluster_resolver.TPUClusterResolver(tpu='grpc://' + os.environ['COLAB_TPU_ADDR'])
+			)
+		)
+
+		
 		# clipnorm seems to speeds up convergence
 		#sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
 		#opt = Adadelta(lr = 0.01, rho = 0.95, epsilon = 1e-06)
 		opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
+
+		#[xuan] use tpu model to compile
+		'''
 		#model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
 		model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer = opt)
-		
+		'''
+		tpu_model.compile(
+			optimizer=opt,
+			loss={'ctc': lambda y_true, y_pred: y_pred}
+		)
+
 		
 		# captures output of softmax so we can decode the output during visualization
 		test_func = K.function([input_data], [y_pred])
 		
 		#print('[*提示] 创建模型成功，模型编译成功')
 		print('[*Info] Create Model Successful, Compiles Model Successful. ')
-		return model, model_data
+		#[xuan] return tpu_model instead
+		# return model, model_data
+		return tpu_model, model_data
+
 		
 	def ctc_lambda_func(self, args):
 		y_pred, labels, input_length, label_length = args
