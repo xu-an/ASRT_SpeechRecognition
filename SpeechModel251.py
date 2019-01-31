@@ -67,7 +67,10 @@ class ModelSpeech(): # 语音模型类
 		CTC层：使用CTC的loss作为损失函数，实现连接性时序多输出
 		
 		'''
-		
+
+
+		#[xuan] change all class under keras.layers to tf.keras.layers
+		'''
 		input_data = Input(name='the_input', shape=(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, 1))
 		
 		layer_h1 = Conv2D(32, (3,3), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
@@ -122,8 +125,63 @@ class ModelSpeech(): # 语音模型类
 		
 		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
 		loss_out = Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+		'''
 		
+		input_data = tf.keras.Input(name='the_input', shape=(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, 1))
 		
+		layer_h1 = tf.keras.layers.Conv2D(32, (3,3), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
+		layer_h1 = tf.keras.layers.Dropout(0.05)(layer_h1)
+		layer_h2 = tf.keras.layers.Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h1) # 卷积层
+		layer_h3 = tf.keras.layers.MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h2) # 池化层
+		#layer_h3 = tf.keras.layers.Dropout(0.2)(layer_h2) # 随机中断部分神经网络连接，防止过拟合
+		layer_h3 = tf.keras.layers.Dropout(0.05)(layer_h3)
+		layer_h4 = tf.keras.layers.Conv2D(64, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h3) # 卷积层
+		layer_h4 = tf.keras.layers.Dropout(0.1)(layer_h4)
+		layer_h5 = tf.keras.layers.Conv2D(64, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h4) # 卷积层
+		layer_h6 = tf.keras.layers.MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h5) # 池化层
+		
+		layer_h6 = tf.keras.layers.Dropout(0.1)(layer_h6)
+		layer_h7 = tf.keras.layers.Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h6) # 卷积层
+		layer_h7 = tf.keras.layers.Dropout(0.15)(layer_h7)
+		layer_h8 = tf.keras.layers.Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h7) # 卷积层
+		layer_h9 = tf.keras.layers.MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h8) # 池化层
+		
+		layer_h9 = tf.keras.layers.Dropout(0.15)(layer_h9)
+		layer_h10 = tf.keras.layers.Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
+		layer_h10 = tf.keras.layers.Dropout(0.2)(layer_h10)
+		layer_h11 = tf.keras.layers.Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h10) # 卷积层
+		layer_h12 = tf.keras.layers.MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h11) # 池化层
+		
+		layer_h12 = tf.keras.layers.Dropout(0.2)(layer_h12)
+		layer_h13 = tf.keras.layers.Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
+		layer_h13 = tf.keras.layers.Dropout(0.2)(layer_h13)
+		layer_h14 = tf.keras.layers.Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h13) # 卷积层
+		layer_h15 = tf.keras.layers.MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h14) # 池化层
+		
+		#test=Model(inputs = input_data, outputs = layer_h12)
+		#test.summary()
+		
+		layer_h16 = tf.keras.layers.Reshape((200, 3200))(layer_h15) #Reshape层
+		#layer_h5 = tf.keras.layers.LSTM(256, activation='relu', use_bias=True, return_sequences=True)(layer_h4) # LSTM层
+		#layer_h6 = tf.keras.layers.Dropout(0.2)(layer_h5) # 随机中断部分神经网络连接，防止过拟合
+		layer_h16 = tf.keras.layers.Dropout(0.3)(layer_h16)
+		layer_h17 = tf.keras.layers.Dense(128, activation="relu", use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
+		layer_h17 = tf.keras.layers.Dropout(0.3)(layer_h17)
+		layer_h18 = tf.keras.layers.Dense(self.MS_OUTPUT_SIZE, use_bias=True, kernel_initializer='he_normal')(layer_h17) # 全连接层
+		
+		y_pred = tf.keras.Activation('softmax', name='Activation0')(layer_h18)
+		model_data = tf.keras.Model(inputs = input_data, outputs = y_pred)
+		#model_data.summary()
+		
+		labels = tf.keras.Input(name='the_labels', shape=[self.label_max_string_length], dtype='float32')
+		input_length = tf.keras.Input(name='input_length', shape=[1], dtype='int64')
+		label_length = tf.keras.Input(name='label_length', shape=[1], dtype='int64')
+		# Keras doesn't currently support loss funcs with extra parameters
+		# so CTC loss is implemented in a lambda layer
+		
+		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
+		loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+
 		#[xuan] change to tf.keras.Model to get rid of bellow error
 		#'Expected `model` argument to be a `Model` instance, got ', <keras.engine.training.Model object
 		#model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
