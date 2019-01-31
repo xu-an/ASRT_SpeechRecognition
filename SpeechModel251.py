@@ -124,9 +124,12 @@ class ModelSpeech(): # 语音模型类
 		loss_out = Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
 		
 		
+		#[xuan] change to tf.keras.Model to get rid of bellow error
+		#'Expected `model` argument to be a `Model` instance, got ', <keras.engine.training.Model object
+		#model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
+		model = tf.keras.Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
 		
-		model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
-		
+
 		model.summary()
 		
 		#[xuan] convert keras model to tpu model
