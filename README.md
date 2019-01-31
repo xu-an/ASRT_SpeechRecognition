@@ -1,3 +1,5 @@
+made some small change for test in TPU environment.
+
 # A Deep-Learning-Based Chinese Speech Recognition System
 基于深度学习的中文语音识别系统，如果您觉得喜欢，请点一个 **"Star"** 吧~
 
