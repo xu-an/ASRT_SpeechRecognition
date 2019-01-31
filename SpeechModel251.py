@@ -169,7 +169,7 @@ class ModelSpeech(): # 语音模型类
 		layer_h17 = tf.keras.layers.Dropout(0.3)(layer_h17)
 		layer_h18 = tf.keras.layers.Dense(self.MS_OUTPUT_SIZE, use_bias=True, kernel_initializer='he_normal')(layer_h17) # 全连接层
 		
-		y_pred = tf.keras.Activation('softmax', name='Activation0')(layer_h18)
+		y_pred = tf.keras.layers.Activation('softmax', name='Activation0')(layer_h18)
 		model_data = tf.keras.Model(inputs = input_data, outputs = y_pred)
 		#model_data.summary()
 		
