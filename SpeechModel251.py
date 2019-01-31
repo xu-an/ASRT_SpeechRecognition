@@ -6,6 +6,7 @@
 import platform as plat
 import os
 import time
+import tensorflow as tf
 
 from general_function.file_wav import *
 from general_function.file_dict import *
