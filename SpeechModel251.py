@@ -148,8 +148,10 @@ class ModelSpeech(): # 语音模型类
 		#model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
 		model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer = opt)
 		'''
+
+		# TODO - What is the decay in keras' Adam
 		tpu_model.compile(
-			optimizer=opt,
+			optimizer=tf.train.AdamOptimizer(learning_rate=0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 10e-8),
 			loss={'ctc': lambda y_true, y_pred: y_pred}
 		)
 
