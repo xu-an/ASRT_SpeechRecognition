@@ -27,7 +27,7 @@ set_session(tf.Session(config=config))
 # [xuan] get TPU info
 if 'COLAB_TPU_ADDR' not in os.environ:
   print('ERROR: Not connected to a TPU runtime')
-  return
+  exit(0)
 else:
   tpu_address = 'grpc://' + os.environ['COLAB_TPU_ADDR']
   print ('TPU address is', tpu_address)
