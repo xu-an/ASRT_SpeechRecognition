@@ -24,6 +24,8 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.95
 #config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
 set_session(tf.Session(config=config))
 '''
+config = tf.ConfigProto()
+set_session(tf.Session(config=config))
 
 # [xuan] get TPU info
 if 'COLAB_TPU_ADDR' not in os.environ:
