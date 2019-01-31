@@ -22,7 +22,7 @@ from keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization # , 
 from keras.layers import Lambda, TimeDistributed, Activation,Conv2D, MaxPooling2D #, Merge
 #[xuan] change to tf.keras
 # from keras import backend as K
-from tf.keras import backend as K
+from tensorflow.keras import backend as K
 
 from keras.optimizers import SGD, Adadelta, Adam
 
