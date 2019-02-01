@@ -183,7 +183,7 @@ class ModelSpeech(): # 语音模型类
 		# so CTC loss is implemented in a lambda layer
 		
 		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
-		loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+		loss_out = Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
 
 		#[xuan] change to tf.keras.Model to get rid of bellow error
 		#'Expected `model` argument to be a `Model` instance, got ', <keras.engine.training.Model object
