@@ -183,7 +183,7 @@ class ModelSpeech(): # 语音模型类
 		# so CTC loss is implemented in a lambda layer
 		
 		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
-		loss_out = Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+		loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
 
 		#[xuan] change to tf.keras.Model to get rid of bellow error
 		#'Expected `model` argument to be a `Model` instance, got ', <keras.engine.training.Model object
@@ -191,34 +191,34 @@ class ModelSpeech(): # 语音模型类
 		model = tf.keras.Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
 		
 
-		model.summary()
+		# model.summary()
 		
-		#[xuan] convert keras model to tpu model
+
+
+		
+		# clipnorm seems to speeds up convergence
+		#sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
+		#opt = Adadelta(lr = 0.01, rho = 0.95, epsilon = 1e-06)
+#		opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
+		opt = tf.train.AdamOptimizer(learning_rate=0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 10e-8)
+
+		#model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
+		model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer = opt)
+		
+		#[xuan] use tpu model to compile
+		# TODO - What is the decay in keras' Adam
+		# tpu_model.compile(
+		# 	optimizer=tf.train.AdamOptimizer(learning_rate=0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 10e-8),
+		# 	loss={'ctc': lambda y_true, y_pred: y_pred}
+		# )
+
+		#[xuan] convert keras model to tpu model, the parameter model here should be an instance
 		tpu_model = tf.contrib.tpu.keras_to_tpu_model(
 			model,
 			strategy=tf.contrib.tpu.TPUDistributionStrategy(
 				tf.contrib.cluster_resolver.TPUClusterResolver(tpu='grpc://' + os.environ['COLAB_TPU_ADDR'])
 			)
 		)
-
-		
-		# clipnorm seems to speeds up convergence
-		#sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
-		#opt = Adadelta(lr = 0.01, rho = 0.95, epsilon = 1e-06)
-		opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
-
-		#[xuan] use tpu model to compile
-		'''
-		#model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
-		model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer = opt)
-		'''
-
-		# TODO - What is the decay in keras' Adam
-		tpu_model.compile(
-			optimizer=tf.train.AdamOptimizer(learning_rate=0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 10e-8),
-			loss={'ctc': lambda y_true, y_pred: y_pred}
-		)
-
 		
 		# captures output of softmax so we can decode the output during visualization
 		test_func = K.function([input_data], [y_pred])
