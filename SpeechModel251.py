@@ -32,6 +32,39 @@ abspath = ''
 ModelName='251'
 #NUM_GPU = 2
 
+
+#[xuan] copied from ModelSpeech class to make it accessable for custom layer class
+def ctc_lambda_func(self, args):
+	y_pred, labels, input_length, label_length = args
+	
+	y_pred = y_pred[:, :, :]
+	#y_pred = y_pred[:, 2:, :]
+	return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+
+
+#[xuan] defin custom layer to resolve the error when using tf.keras.Lambda in keras
+# loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+# loss_out = MyLambdaLayer()(input_layer)
+class MyLambdaLayer(tf.keras.layers.Layer):
+  def __init__(self, **kwargs):
+    super(MyLambdaLayer, self).__init__(**kwargs)
+
+  def build(self, input_shape):
+    super(MyLambdaLayer, self).build(input_shape)
+
+  def call(self, args):
+    return ctc_lambda_func(self, args)
+
+'''
+	def ctc_lambda_func(self, args):
+		y_pred, labels, input_length, label_length = args
+		
+		y_pred = y_pred[:, :, :]
+		#y_pred = y_pred[:, 2:, :]
+		return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+'''
+
+
 class ModelSpeech(): # 语音模型类
 	def __init__(self, datapath):
 		'''
@@ -183,7 +216,10 @@ class ModelSpeech(): # 语音模型类
 		# so CTC loss is implemented in a lambda layer
 		
 		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
-		loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+		#[xuan] change to use custom layer
+		#loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+		loss_out = MyLambdaLayer()([y_pred, labels, input_length, label_length])
+
 
 		#[xuan] change to tf.keras.Model to get rid of bellow error
 		#'Expected `model` argument to be a `Model` instance, got ', <keras.engine.training.Model object
@@ -229,14 +265,15 @@ class ModelSpeech(): # 语音模型类
 		# return model, model_data
 		return tpu_model, model_data
 
-		
+#[xuan] move out of class to make it accessable for custom layer class
+'''		
 	def ctc_lambda_func(self, args):
 		y_pred, labels, input_length, label_length = args
 		
 		y_pred = y_pred[:, :, :]
 		#y_pred = y_pred[:, 2:, :]
 		return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
-	
+'''	
 	
 	
 	def TrainModel(self, datapath, epoch = 2, save_step = 1000, batch_size = 32, filename = abspath + 'model_speech/m' + ModelName + '/speech_model'+ModelName):
