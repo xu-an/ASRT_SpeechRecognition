@@ -55,15 +55,6 @@ class MyLambdaLayer(tf.keras.layers.Layer):
   def call(self, args):
     return ctc_lambda_func(self, args)
 
-'''
-	def ctc_lambda_func(self, args):
-		y_pred, labels, input_length, label_length = args
-		
-		y_pred = y_pred[:, :, :]
-		#y_pred = y_pred[:, 2:, :]
-		return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
-'''
-
 
 class ModelSpeech(): # 语音模型类
 	def __init__(self, datapath):
@@ -235,7 +226,8 @@ class ModelSpeech(): # 语音模型类
 		# clipnorm seems to speeds up convergence
 		#sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
 		#opt = Adadelta(lr = 0.01, rho = 0.95, epsilon = 1e-06)
-#		opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
+		#[xuan] use tf adam
+		#opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
 		opt = tf.train.AdamOptimizer(learning_rate=0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 10e-8)
 
 		#model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
@@ -265,15 +257,15 @@ class ModelSpeech(): # 语音模型类
 		# return model, model_data
 		return tpu_model, model_data
 
-#[xuan] move out of class to make it accessable for custom layer class
-'''		
+	#[xuan] move out of class to make it accessable for custom layer class
+	'''		
 	def ctc_lambda_func(self, args):
 		y_pred, labels, input_length, label_length = args
 		
 		y_pred = y_pred[:, :, :]
 		#y_pred = y_pred[:, 2:, :]
 		return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
-'''	
+	'''	
 	
 	
 	def TrainModel(self, datapath, epoch = 2, save_step = 1000, batch_size = 32, filename = abspath + 'model_speech/m' + ModelName + '/speech_model'+ModelName):
