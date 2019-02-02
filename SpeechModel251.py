@@ -209,7 +209,7 @@ class ModelSpeech(): # 语音模型类
 		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
 		#[xuan] change to use custom layer
 		#loss_out = tf.keras.layers.Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
-		loss_out = MyLambdaLayer()([y_pred, labels, input_length, label_length])
+		loss_out = MyLambdaLayer(name='ctc')([y_pred, labels, input_length, label_length])
 
 
 		#[xuan] change to tf.keras.Model to get rid of bellow error
