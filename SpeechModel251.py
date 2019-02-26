@@ -167,24 +167,33 @@ class ModelSpeech(): # 语音模型类
 		
 		yielddatas = data.data_genetator(batch_size, self.AUDIO_LENGTH)
 		
-		for epoch in range(epoch): # 迭代轮数
-			print('[running] train epoch %d .' % epoch)
+		steps_per_epoch = save_step
+
+		# [xuan] 换个变量名，避免歧义
+		# for epoch in range(epoch): # 迭代轮数
+		for ep in range(epoch): # 迭代轮数
+			print('[running] train epoch %d / %d.' %(ep, epoch))
 			n_step = 0 # 迭代数据数
-			while True:
-				try:
-					print('[message] epoch %d . Have train datas %d+'%(epoch, n_step*save_step))
-					# data_genetator是一个生成器函数
-					
-					#self._model.fit_generator(yielddatas, save_step, nb_worker=2)
-					self._model.fit_generator(yielddatas, save_step)
-					n_step += 1
-				except StopIteration:
-					print('[error] generator error. please check data format.')
-					break
+			# [xuan] 只保留generator内部的无限循环
+			# while True:
+			try:
+				print('[message] epoch %d . Have train datas %d+'%(ep, n_step*save_step))
+				# data_genetator是一个生成器函数
 				
-				self.SaveModel(comment='_e_'+str(epoch)+'_step_'+str(n_step * save_step))
-				self.TestModel(self.datapath, str_dataset='train', data_count = 4)
-				self.TestModel(self.datapath, str_dataset='dev', data_count = 4)
+				# [xuan] fit_generator会在返回steps_per_epoch次数据时，记为一个epoch结束，从而开始下一个epoch
+				# fit_generator(self, generator, steps_per_epoch, epochs=1, verbose=1, callbacks=None, validation_data=None, validation_steps=None, class_weight=None, max_q_size=10, workers=1, pickle_safe=False, initial_epoch=0)
+				# , epochs=2, initial_epoch=0
+
+				#self._model.fit_generator(yielddatas, steps_per_epoch, nb_worker=2)
+				self._model.fit_generator(yielddatas, steps_per_epoch, epochs=2)
+				n_step += 1
+			except StopIteration:
+				print('[error] generator error. please check data format.')
+				break
+			
+			self.SaveModel(comment='_e_'+str(ep)+'_step_'+str(n_step * save_step))
+			self.TestModel(self.datapath, str_dataset='train', data_count = 4)
+			self.TestModel(self.datapath, str_dataset='dev', data_count = 4)
 				
 	def LoadModel(self,filename = abspath + 'model_speech/m'+ModelName+'/speech_model'+ModelName+'.model'):
 		'''
@@ -406,6 +415,7 @@ if(__name__=='__main__'):
 	#config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
 	#set_session(tf.Session(config=config))
 	
+	print("***********************************")
 	
 	datapath =  abspath + ''
 	modelpath =  abspath + 'model_speech'
@@ -428,7 +438,7 @@ if(__name__=='__main__'):
 	
 	ms = ModelSpeech(datapath)
 	
-	
+	# [xuan] 要接续上次训练的结果继续训练，需要先加载模型
 	#ms.LoadModel(modelpath + 'm251/speech_model251_e_0_step_100000.model')
 	ms.TrainModel(datapath, epoch = 50, batch_size = 16, save_step = 500)
 	

@@ -44,6 +44,10 @@ else:
 ms = ModelSpeech(datapath)
 
 #ms.LoadModel(modelpath + 'speech_model251_e_0_step_327500.model')
+# ms.TrainModel(datapath, epoch = 50, batch_size = 16, save_step = 500)
+
+# [xuan] 利用之前的训练结果
+# ms.LoadModel(modelpath + 'm251/2/speech_model251_e_1_step_10.model')
 ms.TrainModel(datapath, epoch = 50, batch_size = 16, save_step = 500)
 
 
