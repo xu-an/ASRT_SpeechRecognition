@@ -185,7 +185,7 @@ class ModelSpeech(): # 语音模型类
 				# , epochs=2, initial_epoch=0
 
 				#self._model.fit_generator(yielddatas, steps_per_epoch, nb_worker=2)
-				self._model.fit_generator(yielddatas, steps_per_epoch, epochs=2)
+				self._model.fit_generator(yielddatas, steps_per_epoch)
 				n_step += 1
 			except StopIteration:
 				print('[error] generator error. please check data format.')
