@@ -47,7 +47,8 @@ ms = ModelSpeech(datapath)
 # ms.TrainModel(datapath, epoch = 50, batch_size = 16, save_step = 500)
 
 # [xuan] 利用之前的训练结果
-ms.LoadModel(modelpath + 'm251/1/speech_model251_e_32_step_500.model')
-ms.TrainModel(datapath, epoch = 30, batch_size = 16, save_step = 1000)
+# ms.LoadModel(modelpath + 'm251/1/speech_model251_e_32_step_500.model')
+ms.LoadModel(modelpath + 'm251/2/speech_model251_e_29_step_1000.model')
+ms.TrainModel(datapath, epoch = 36, batch_size = 16, save_step = 1000)
 
 
