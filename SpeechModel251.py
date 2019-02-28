@@ -192,8 +192,8 @@ class ModelSpeech(): # 语音模型类
 				break
 			
 			self.SaveModel(comment='_e_'+str(ep)+'_step_'+str(n_step * save_step))
-			self.TestModel(self.datapath, str_dataset='train', data_count = 4)
-			self.TestModel(self.datapath, str_dataset='dev', data_count = 4)
+			self.TestModel(self.datapath, str_dataset='train', data_count = 40)
+			self.TestModel(self.datapath, str_dataset='dev', data_count = 40)
 				
 	def LoadModel(self,filename = abspath + 'model_speech/m'+ModelName+'/speech_model'+ModelName+'.model'):
 		'''
